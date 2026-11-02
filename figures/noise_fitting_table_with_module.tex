@@ -2,7 +2,6 @@
 \usepackage[T1]{fontenc}
 \usepackage{tgtermes}
 \usepackage{booktabs}
-
 \begin{document}
 \begingroup
 \fontsize{10.5}{12}\selectfont
@@ -12,20 +11,20 @@
 \setlength{\cmidrulewidth}{0.45pt}
 \renewcommand{\arraystretch}{0.96}
 \begin{tabular}{@{}cccccccccc@{}}
-% Paper methods and the new HDF5 row use different units and test sets.
-% Preserve the paper's original bolding; do not rank the HDF5 row against it.
+% All numeric cells are local HDF5 test results in raw coordinate units.
+% AD(c) is a clean-GT-boundary center proxy; PIE-NET was not rerun.
 \toprule
 Noise level & \multicolumn{3}{c}{0.1\% noise} & \multicolumn{3}{c}{0.5\% noise} & \multicolumn{3}{c}{1\% noise} \\
 \cmidrule(l{1pt}r{1pt}){2-4}\cmidrule(l{1pt}r{1pt}){5-7}\cmidrule(l{1pt}r{1pt}){8-10}
 Method & $AD(\mathbf{c})$ & $AD(r)$ & $MSE(r)$ & $AD(\mathbf{c})$ & $AD(r)$ & $MSE(r)$ & $AD(\mathbf{c})$ & $AD(r)$ & $MSE(r)$ \\
 \midrule
-Hyper     & 0.465328 & 0.296654 & 0.089543 & \textbf{0.38116} & 0.31696  & 0.103115 & \textbf{0.667738} & 0.271244 & 0.076074 \\
-LLS       & 0.466897 & 0.296752 & 0.089596 & 0.385131 & 0.321495 & 0.105989 & 0.675546 & 0.279059 & 0.08018  \\
-RANSAC    & 0.438734 & 0.309176 & 0.103949 & 0.454232 & 0.377379 & 0.172154 & 0.809487 & 0.281098 & 0.108321 \\
-RLTS      & 0.469162 & 0.278478 & 0.080783 & 0.50883  & 0.239431 & 0.092588 & 0.707097 & 0.252474 & 0.075499 \\
-PIE-NET   & 0.649781 & 0.312905 & 0.121466 & 0.67379  & 0.312294 & 0.155506 & 0.783924 & 0.268966 & 0.207283 \\
-Ours      & \textbf{0.421035} & \textbf{0.103621} & \textbf{0.016823} & 0.398301 & \textbf{0.082654} & \textbf{0.01207} & 0.671365 & \textbf{0.016359} & \textbf{0.006351} \\
-Ours+Attn (HDF5) & 0.003961 & 0.001895 & 0.000018 & 0.004544 & 0.002058 & 0.000034 & 0.006662 & 0.003925 & 0.000060 \\
+Hyper & 0.001988 & 0.003817 & 0.000016 & 0.002197 & 0.003805 & 0.000016 & 0.007300 & 0.007052 & 0.000281 \\
+LLS & \textbf{0.001957} & 0.004102 & 0.000019 & \textbf{0.002172} & 0.004149 & 0.000020 & 0.005414 & 0.006577 & 0.000070 \\
+RANSAC & 0.003703 & 0.004174 & 0.000026 & 0.003016 & 0.004158 & 0.000025 & 0.005531 & 0.006083 & 0.000196 \\
+RLTS (approx.) & 0.002489 & 0.003967 & 0.000018 & 0.002875 & 0.004078 & 0.000021 & 0.005663 & 0.005792 & 0.000092 \\
+PIE-NET & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+Ours (local) & 0.004387 & 0.001636 & 0.000019 & 0.006880 & 0.003652 & 0.000094 & 0.014383 & 0.012111 & 0.000412 \\
+Ours+Attn & 0.002747 & \textbf{0.001382} & \textbf{0.000003} & 0.002739 & \textbf{0.001284} & \textbf{0.000003} & \textbf{0.004540} & \textbf{0.002405} & \textbf{0.000017} \\
 \bottomrule
 \end{tabular}
 \endgroup

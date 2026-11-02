@@ -6,3 +6,4 @@ h5py==3.16.0
 einops==0.8.2
 tqdm==4.67.3
 matplotlib==3.10.7
+circle-fit==0.2.1
