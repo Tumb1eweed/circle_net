@@ -22,10 +22,11 @@ python draw_point_attention_architecture.py
 - [边界分类表](classification_table_with_module.png)
 - [加噪圆拟合表](noise_fitting_table_with_module.png)
 
-两表的新增列来自 `log/point_attention_balanced_20261102/noise_test.json`。论文结果和本地结果的测试集与单位不同，不能直接按数值比较；新增列的 `AD(c)` 是基于无噪声 GT 边界点拟合圆心计算的代理误差。表格按要求不加入脚注。
+两表的新增结果来自 `log/point_attention_balanced_20261102/noise_test.json`。论文结果和本地结果的测试集与单位不同，不能直接按数值比较；新增结果的 `AD(c)` 是基于无噪声 GT 边界点拟合圆心计算的代理误差。表格按要求不加入脚注；粗体按表内数值标记：分类表逐指标取最大，拟合表逐噪声指标取最小。第二张表保留原论文的“方法 × 噪声指标”排版，因此新模块作为最后一行。
 
-重新生成（也会导出 SVG、PDF）：
+LaTeX 源码：[边界分类表](classification_table_with_module.tex)、[加噪圆拟合表](noise_fitting_table_with_module.tex)。在仓库根目录重新编译 PDF：
 
 ```bash
-python figures/draw_paper_comparison_tables.py --results log/point_attention_balanced_20261102/noise_test.json
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=figures figures/classification_table_with_module.tex
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=figures figures/noise_fitting_table_with_module.tex
 ```
