@@ -1,0 +1,23 @@
+# Local datasets, generated samples, and experiment outputs
+/data/
+/log/
+/*.ply
+/*.png
+/models/ransac/*_circles.txt
+
+# Python and model artifacts
+__pycache__/
+*.py[cod]
+*.pth
+*.pt
+*.h5
+*.hdf5
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environments and editor state
+.venv/
+.idea/
+.vscode/
+.DS_Store
