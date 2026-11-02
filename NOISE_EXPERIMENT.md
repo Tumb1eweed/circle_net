@@ -71,3 +71,5 @@ python figures/plot_noise_robustness.py \
 ```
 
 完整逐种子、逐半径结果保存在上述两个本地 JSON。此实验是在**已训练模型上做测试时扰动**；论文使用不同噪声和采样密度的虚拟扫描数据进行训练与测试，且有 CAD 圆心真值，因此两者不构成严格复现或数值对照。
+
+同一 HDF5 测试集上普通代数最小二乘（LLS）与当前模型的拟合对照见 [LLS_NOISE_COMPARISON.md](LLS_NOISE_COMPARISON.md)。
