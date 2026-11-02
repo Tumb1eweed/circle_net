@@ -35,7 +35,7 @@ conda run -n circlenet-repro python plot_v2.py \
 
 The balanced split uses scan groups 0–7 for training, 8–9 for validation, and 10–11 for testing. Each `data_l0` patch has 500 query points and represents at most one target circle; `data_l1` supplies 2000 context points. The model predicts boundary logits, point-weight logits, and a plane normal. A differentiable weighted algebraic fit then produces center and radius. The first 20 training epochs gradually replace the ground-truth boundary mask with predicted probabilities inside the fit; validation and testing use predictions throughout.
 
-See [EXPERIMENTS_V2.md](EXPERIMENTS_V2.md) for the recorded results, [REPRODUCTION.md](REPRODUCTION.md) for the earlier reproduction, and [the architecture figure](figures/point_attention_architecture.svg) for tensor dimensions. Source files for the current pipeline are `model_point_attention.py`, `model_v2.py`, `repro_model.py`, `train_v2.py`, and `eval_v2.py`.
+See [EXPERIMENTS_V2.md](EXPERIMENTS_V2.md) for the recorded results, [NOISE_EXPERIMENT.md](NOISE_EXPERIMENT.md) for controlled Gaussian-noise tests, [REPRODUCTION.md](REPRODUCTION.md) for the earlier reproduction, and [the architecture figure](figures/point_attention_architecture.svg) for tensor dimensions. Source files for the current pipeline are `model_point_attention.py`, `model_v2.py`, `repro_model.py`, `train_v2.py`, and `eval_v2.py`.
 
 ## Original implementation
 
