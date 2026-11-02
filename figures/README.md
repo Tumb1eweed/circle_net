@@ -16,3 +16,16 @@
 ```bash
 python draw_point_attention_architecture.py
 ```
+
+## 对照表
+
+- [边界分类表](classification_table_with_module.png)
+- [加噪圆拟合表](noise_fitting_table_with_module.png)
+
+两表的新增列来自 `log/point_attention_balanced_20261102/noise_test.json`。论文结果和本地结果的测试集与单位不同，不能直接按数值比较；新增列的 `AD(c)` 是基于无噪声 GT 边界点拟合圆心计算的代理误差。表格按要求不加入脚注。
+
+重新生成（也会导出 SVG、PDF）：
+
+```bash
+python figures/draw_paper_comparison_tables.py --results log/point_attention_balanced_20261102/noise_test.json
+```
