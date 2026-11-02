@@ -12,19 +12,20 @@
 \setlength{\cmidrulewidth}{0.45pt}
 \renewcommand{\arraystretch}{0.96}
 \begin{tabular}{@{}cccccccccc@{}}
-% Bold the minimum in each noise-metric column, including Ours+Attn.
+% Paper methods and the new HDF5 row use different units and test sets.
+% Preserve the paper's original bolding; do not rank the HDF5 row against it.
 \toprule
 Noise level & \multicolumn{3}{c}{0.1\% noise} & \multicolumn{3}{c}{0.5\% noise} & \multicolumn{3}{c}{1\% noise} \\
 \cmidrule(l{1pt}r{1pt}){2-4}\cmidrule(l{1pt}r{1pt}){5-7}\cmidrule(l{1pt}r{1pt}){8-10}
 Method & $AD(\mathbf{c})$ & $AD(r)$ & $MSE(r)$ & $AD(\mathbf{c})$ & $AD(r)$ & $MSE(r)$ & $AD(\mathbf{c})$ & $AD(r)$ & $MSE(r)$ \\
 \midrule
-Hyper     & 0.465328 & 0.296654 & 0.089543 & 0.38116 & 0.31696  & 0.103115 & 0.667738 & 0.271244 & 0.076074 \\
+Hyper     & 0.465328 & 0.296654 & 0.089543 & \textbf{0.38116} & 0.31696  & 0.103115 & \textbf{0.667738} & 0.271244 & 0.076074 \\
 LLS       & 0.466897 & 0.296752 & 0.089596 & 0.385131 & 0.321495 & 0.105989 & 0.675546 & 0.279059 & 0.08018  \\
 RANSAC    & 0.438734 & 0.309176 & 0.103949 & 0.454232 & 0.377379 & 0.172154 & 0.809487 & 0.281098 & 0.108321 \\
 RLTS      & 0.469162 & 0.278478 & 0.080783 & 0.50883  & 0.239431 & 0.092588 & 0.707097 & 0.252474 & 0.075499 \\
 PIE-NET   & 0.649781 & 0.312905 & 0.121466 & 0.67379  & 0.312294 & 0.155506 & 0.783924 & 0.268966 & 0.207283 \\
-Ours      & 0.421035 & 0.103621 & 0.016823 & 0.398301 & 0.082654 & 0.01207 & 0.671365 & 0.016359 & 0.006351 \\
-Ours+Attn & \textbf{0.003961} & \textbf{0.001895} & \textbf{0.000018} & \textbf{0.004544} & \textbf{0.002058} & \textbf{0.000034} & \textbf{0.006662} & \textbf{0.003925} & \textbf{0.000060} \\
+Ours      & \textbf{0.421035} & \textbf{0.103621} & \textbf{0.016823} & 0.398301 & \textbf{0.082654} & \textbf{0.01207} & 0.671365 & \textbf{0.016359} & \textbf{0.006351} \\
+Ours+Attn (HDF5) & 0.003961 & 0.001895 & 0.000018 & 0.004544 & 0.002058 & 0.000034 & 0.006662 & 0.003925 & 0.000060 \\
 \bottomrule
 \end{tabular}
 \endgroup

@@ -20,9 +20,9 @@ python draw_point_attention_architecture.py
 ## 对照表
 
 - [边界分类表](classification_table_rebolded.png)
-- [加噪圆拟合表](noise_fitting_table_rebolded.png)
+- [加噪圆拟合表](noise_fitting_table_units_checked.png)
 
-两表的新增结果来自 `log/point_attention_balanced_20261102/noise_test.json`。论文结果和本地结果的测试集与单位不同，不能直接按数值比较；新增结果的 `AD(c)` 是基于无噪声 GT 边界点拟合圆心计算的代理误差。表格按要求不加入脚注；粗体按表内数值标记：分类表逐指标取最大，拟合表逐噪声指标取最小。第二张表保留原论文的“方法 × 噪声指标”排版，因此新模块作为最后一行。
+两表的新增结果来自 `log/point_attention_balanced_20261102/noise_test.json`。论文拟合结果的 AD(c)、AD(r) 单位是 mm，MSE(r) 单位是 mm²；新增结果仍是 HDF5 原始坐标单位及其平方。论文与 HDF5 均未提供可靠的坐标换算比例，因此**拟合表不允许跨数据集按数值加粗**；其粗体只保留论文原本的方法排名。新增结果的 AD(c) 是无噪声 GT 边界点拟合圆心计算的代理误差，不是论文的 CAD 真值误差。第二张表保留原论文的“方法 × 噪声指标”排版，因此新模块作为最后一行。
 
 LaTeX 源码：[边界分类表](classification_table_with_module.tex)、[加噪圆拟合表](noise_fitting_table_with_module.tex)。在仓库根目录重新编译 PDF：
 
