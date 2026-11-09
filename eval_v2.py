@@ -17,7 +17,8 @@ from train_v2 import CirclePatchesV2, RADII, evaluate, losses_and_predictions, m
 def evaluate_by_radius(model, loader, positive_weight, device):
     model.eval()
     totals = [{"patches": 0, "tp": 0, "fp": 0, "fn": 0,
-               "radius_abs_error": 0.0, "covered": 0} for _ in range(len(RADII))]
+               "radius_abs_error": 0.0, "radius_sq_error": 0.0,
+               "covered": 0} for _ in range(len(RADII))]
     for raw_batch in loader:
         batch = move_batch(raw_batch, device)
         _, _, labels, radius_codes, _ = batch
@@ -35,6 +36,7 @@ def evaluate_by_radius(model, loader, positive_weight, device):
             item["fp"] += (guess & ~target).sum().item()
             item["fn"] += (~guess & target).sum().item()
             item["radius_abs_error"] += (radius[selected] - RADII[code].to(device)).abs().sum().item()
+            item["radius_sq_error"] += (radius[selected] - RADII[code].to(device)).square().sum().item()
             item["covered"] += (guess.sum(dim=1) >= 10).sum().item()
     result = {}
     for code, item in enumerate(totals):
@@ -44,13 +46,15 @@ def evaluate_by_radius(model, loader, positive_weight, device):
                              "precision": p, "recall": r,
                              "f1": 2 * p * r / max(p + r, 1e-12),
                              "radius_mae": item["radius_abs_error"] / max(item["patches"], 1),
+                             "radius_mse": item["radius_sq_error"] / max(item["patches"], 1),
                              "fit_coverage": item["covered"] / max(item["patches"], 1)}
     return result
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--checkpoint", type=Path, required=True)
+    parser.add_argument("--checkpoint", type=Path,
+                        default=Path(__file__).resolve().parent / "log/point_attention/last_model.pth")
     parser.add_argument("--split", choices=("val", "test"), default="test")
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--by-radius", action="store_true")

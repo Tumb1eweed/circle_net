@@ -4,8 +4,8 @@
 <marker id="arrow-accent" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3.5 L0,7 Z" fill="#2c6096"/></marker>
 </defs>
 <rect width="519" height="706" fill="white"/>
-<text x="259.5" y="20" text-anchor="middle" font-family="DejaVu Sans, WenQuanYi Zen Hei, sans-serif" font-size="10.1" font-weight="bold" fill="#1c2d3b">CircleNet point-attention architecture</text>
-<text x="259.5" y="35" text-anchor="middle" font-family="DejaVu Sans, WenQuanYi Zen Hei, sans-serif" font-size="6.8" font-weight="normal" fill="#1c2d3b">Current trained branch  ·  B = batch size  ·  one target circle per l0 patch</text>
+<text x="259.5" y="20" text-anchor="middle" font-family="DejaVu Sans, WenQuanYi Zen Hei, sans-serif" font-size="10.1" font-weight="bold" fill="#1c2d3b">CircleNet + PTv3-inspired point attention</text>
+<text x="259.5" y="35" text-anchor="middle" font-family="DejaVu Sans, WenQuanYi Zen Hei, sans-serif" font-size="6.8" font-weight="normal" fill="#1c2d3b">CircleNetPointAttention code path  ·  B = batch size  ·  at most one circle per l0 patch</text>
 <path id="e-input-query-knn" d="M128 99 V111 H210 V121" fill="none" stroke="#65798b" stroke-width="1.25" stroke-linejoin="round" marker-end="url(#arrow)"/>
 <path id="e-input-context-knn" d="M392 99 V111 H310 V121" fill="none" stroke="#65798b" stroke-width="1.25" stroke-linejoin="round" marker-end="url(#arrow)"/>
 <path id="e-knn-local" d="M210 175 V185 H133 V198" fill="none" stroke="#65798b" stroke-width="1.25" stroke-linejoin="round" marker-end="url(#arrow)"/>
@@ -67,7 +67,7 @@
 </g>
 <g id="c-point-attention">
 <rect x="16" y="355" width="487" height="121" rx="7" fill="none" stroke="#2c6096" stroke-width="1.35"/>
-<text x="259.5" y="371" text-anchor="middle" font-family="DejaVu Sans, WenQuanYi Zen Hei, sans-serif" font-size="7.2" font-weight="bold" fill="#2c6096">NEW  ·  attention between l0 points</text>
+<text x="259.5" y="371" text-anchor="middle" font-family="DejaVu Sans, WenQuanYi Zen Hei, sans-serif" font-size="7.2" font-weight="bold" fill="#2c6096">PTv3-inspired module  ·  attention between l0 points</text>
 </g>
 <g id="n-position">
 <rect x="25" y="388" width="88" height="70" rx="5" fill="#eaf2fa" stroke="#2c6096" stroke-width="1"/>
@@ -129,5 +129,5 @@
 <text x="259.5" y="661.45" text-anchor="middle" font-family="DejaVu Sans, WenQuanYi Zen Hei, sans-serif" font-size="6.65" font-weight="normal" fill="#1c2d3b">center c [B,3]   ·   radius r [B]   ·   normal n [B,3]</text>
 </g>
 <text x="259.5" y="691" text-anchor="middle" font-family="DejaVu Sans, WenQuanYi Zen Hei, sans-serif" font-size="5.6" font-weight="normal" fill="#1c2d3b">* 500 points are padded to 512 for 16 windows; 12 padding tokens are masked.</text>
-<text x="259.5" y="701" text-anchor="middle" font-family="DejaVu Sans, WenQuanYi Zen Hei, sans-serif" font-size="5.6" font-weight="normal" fill="#1c2d3b">Each blue MHA block: LN → MHA → residual → LN → MLP(128→256→128) → residual.</text>
+<text x="259.5" y="701" text-anchor="middle" font-family="DejaVu Sans, WenQuanYi Zen Hei, sans-serif" font-size="5.6" font-weight="normal" fill="#1c2d3b">Blue blocks: LN → MHA → residual → LN → MLP(128→256→128) → residual. Not full PTv3.</text>
 </svg>

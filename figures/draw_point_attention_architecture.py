@@ -67,9 +67,9 @@ def main():
             f'<path d="M0,0 L7,3.5 L0,7 Z" fill="{fill}"/></marker>')
     add("</defs>")
     add(f'<rect width="{W}" height="{H}" fill="white"/>')
-    add(text(259.5, 20, "CircleNet point-attention architecture", 10.1,
+    add(text(259.5, 20, "CircleNet + PTv3-inspired point attention", 10.1,
              weight="bold"))
-    add(text(259.5, 35, "Current trained branch  ·  B = batch size  ·  one target circle per l0 patch", 6.8))
+    add(text(259.5, 35, "CircleNetPointAttention code path  ·  B = batch size  ·  at most one circle per l0 patch", 6.8))
 
     # Connectors are drawn first so that nodes cover their endpoints.
     arrow("e-input-query-knn", "M128 99 V111 H210 V121")
@@ -117,7 +117,7 @@ def main():
     add('<g id="c-point-attention">')
     add('<rect x="16" y="355" width="487" height="121" rx="7" fill="none" '
         f'stroke="{ACCENT}" stroke-width="1.35"/>')
-    add(text(259.5, 371, "NEW  ·  attention between l0 points", 7.2,
+    add(text(259.5, 371, "PTv3-inspired module  ·  attention between l0 points", 7.2,
              weight="bold", fill=ACCENT))
     add("</g>")
     box("n-position", 25, 388, 88, 70,
@@ -145,7 +145,7 @@ def main():
         ("Differentiable weighted 3D circle fit on Q, q and n",
          "center c [B,3]   ·   radius r [B]   ·   normal n [B,3]"), title=True)
     add(text(259.5, 691, "* 500 points are padded to 512 for 16 windows; 12 padding tokens are masked.", 5.6))
-    add(text(259.5, 701, "Each blue MHA block: LN → MHA → residual → LN → MLP(128→256→128) → residual.", 5.6))
+    add(text(259.5, 701, "Blue blocks: LN → MHA → residual → LN → MLP(128→256→128) → residual. Not full PTv3.", 5.6))
     add("</svg>")
     OUT.mkdir(parents=True, exist_ok=True)
     SVG.write_text("\n".join(parts) + "\n", encoding="utf-8")

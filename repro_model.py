@@ -68,8 +68,8 @@ class CircleNetRepro(nn.Module):
 def weighted_circle_fit(points, weights, normals, ridge=1e-5):
     """Fit one 3D circle per batch item; gradients reach the point weights.
 
-    The known surface normal is supplied by the bundled HDF5 data. It fixes the
-    circle plane, while the circle center and radius are solved in that plane.
+    The supplied normal fixes the circle plane, while the center and radius are
+    solved in that plane. The mainline model predicts this normal per patch.
     """
     eps = 1e-8
     fallback = torch.tensor([0., 1., 0.], device=points.device, dtype=points.dtype)

@@ -164,8 +164,11 @@ def evaluate(model, loader, positive_weight, device):
     result.update({"precision": precision, "recall": recall,
                    "f1": 2 * precision * recall / max(precision + recall, 1e-12),
                    "soft_radius_mae": float(np.mean(soft_errors)),
+                   "soft_radius_mse": float(np.mean(np.square(soft_errors))),
                    "hard_radius_mae": float(np.mean(hard_errors)) if hard_errors else None,
+                   "hard_radius_mse": float(np.mean(np.square(hard_errors))) if hard_errors else None,
                    "oracle_radius_mae": float(np.mean(oracle_errors)),
+                   "oracle_radius_mse": float(np.mean(np.square(oracle_errors))),
                    "proxy_center_distance_mae": float(np.mean(proxy_center_errors)),
                    "hard_fit_coverage": hard_valid / max(positive_count, 1),
                    "negative_patch_false_circle_rate": circle_fp / max(negatives, 1)})
@@ -174,15 +177,18 @@ def evaluate(model, loader, positive_weight, device):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--epochs", type=int, default=50)
+    parser.add_argument("--epochs", type=int, default=60)
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--warmup-epochs", type=int, default=20)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--split-protocol", choices=SPLIT_PROTOCOLS, default="stress")
-    parser.add_argument("--model", choices=("fit", "direct", "point_attention"), default="fit")
-    parser.add_argument("--out-dir", type=Path, default=ROOT / "log/v2")
+    parser.add_argument("--split-protocol", choices=SPLIT_PROTOCOLS, default="balanced")
+    parser.add_argument("--model", choices=("fit", "direct", "point_attention"),
+                        default="point_attention", help="model variant; point_attention is the mainline default")
+    parser.add_argument("--out-dir", type=Path, help="output directory (default: log/<model>)")
     args = parser.parse_args()
+    if args.out_dir is None:
+        args.out_dir = ROOT / "log" / args.model
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -192,8 +198,9 @@ def main():
     groups = SPLIT_PROTOCOLS[args.split_protocol]
     training = CirclePatchesV2("train", groups=groups)
     validation = CirclePatchesV2("val", groups=groups)
+    shuffle_generator = torch.Generator().manual_seed(args.seed)
     train_loader = DataLoader(training, batch_size=args.batch_size, shuffle=True,
-                              pin_memory=device.type == "cuda")
+                              pin_memory=device.type == "cuda", generator=shuffle_generator)
     val_loader = DataLoader(validation, batch_size=args.batch_size, shuffle=False,
                             pin_memory=device.type == "cuda")
     positives = int((training.labels == 1).sum())
