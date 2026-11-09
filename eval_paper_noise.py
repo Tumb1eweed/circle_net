@@ -1,8 +1,9 @@
-"""Paired added-noise comparison: archived paper checkpoint versus point attention.
+"""Paired added-noise comparison of paper, fit, and point-attention checkpoints.
 
-The paper model is evaluated on patches it never trained on, with its original
-11 validation patches reported separately. All models see identical perturbed
-coordinates. Radius error is conditional on a valid paper-style hard fit.
+By default, the paper model is evaluated on patches it never trained on, with
+its original 11 validation patches reported separately. An optional diagnostic
+includes training-overlap patches. All models see identical perturbed
+coordinates. Paper radius error is conditional on a valid hard fit.
 """
 
 import argparse
@@ -16,6 +17,7 @@ import torch
 from eval_noise import clean_reference
 from eval_paper_baseline import load_module, metrics, paper_input, paper_split_ids
 from model_point_attention import CircleNetPointAttention
+from model_v2 import CircleNetV2
 from repro_model import weighted_circle_fit
 from train_v2 import BALANCED_GROUPS, CirclePatchesV2
 
@@ -46,7 +48,7 @@ def paper_predict(dataset, model, paper_model, paper_data, paper_train, device):
 
 
 @torch.inference_mode()
-def attention_predict(dataset, model, device):
+def modern_predict(dataset, model, device):
     predictions = {}
     for start in range(0, len(dataset), 8):
         end = min(start + 8, len(dataset))
@@ -83,16 +85,24 @@ def select_dataset(dataset, indices, query, context):
     return selected
 
 
-def score_condition(dataset, references, paper, models, paper_modules, device, groups):
+def score_condition(dataset, references, paper, models, fit_models,
+                    paper_modules, device, groups):
     paper_outputs = paper_predict(dataset, paper, *paper_modules, device)
-    attention_outputs = {key: attention_predict(dataset, model, device)
+    attention_outputs = {key: modern_predict(dataset, model, device)
                          for key, model in models.items()}
+    fit_outputs = {key: modern_predict(dataset, model, device)
+                   for key, model in fit_models.items()}
     scored = {}
     for name, ids in groups.items():
         scored[name] = {"paper": metrics(dataset, paper_outputs, references, ids),
-                        "attention": {}}
+                        "attention": {}, "fit": {}}
         for key, outputs in attention_outputs.items():
             scored[name]["attention"][key] = {
+                "soft": metrics(dataset, outputs, references, ids),
+                "hard": metrics(dataset, outputs, references, ids, fit_key="hard_fit"),
+            }
+        for key, outputs in fit_outputs.items():
+            scored[name]["fit"][key] = {
                 "soft": metrics(dataset, outputs, references, ids),
                 "hard": metrics(dataset, outputs, references, ids, fit_key="hard_fit"),
             }
@@ -104,8 +114,11 @@ def main():
     parser.add_argument("--paper-root", type=Path,
                         default=Path(__file__).resolve().parent.parent / "circle_net_paper_baseline")
     parser.add_argument("--attention-checkpoints", nargs="+", type=Path, required=True)
+    parser.add_argument("--fit-checkpoints", nargs="+", type=Path, default=())
     parser.add_argument("--noise-percent", nargs="+", type=float, default=(0.1, 0.5, 1.0))
     parser.add_argument("--seeds", nargs="+", type=int, default=(101, 102, 103, 104, 105))
+    parser.add_argument("--include-paper-train", action="store_true",
+                        help="also evaluate patches used to train the paper checkpoint")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -113,12 +126,17 @@ def main():
     full_references, _ = clean_reference(original, 8, device)
     full_references = full_references.numpy()
     paper_train_ids, paper_holdout_ids = paper_split_ids()
-    indices = [i for i, patch_id in enumerate(original.ids) if patch_id not in paper_train_ids]
+    indices = [i for i, patch_id in enumerate(original.ids)
+               if args.include_paper_train or patch_id not in paper_train_ids]
     references = full_references[indices]
     ids = {original.ids[i] for i in indices}
     groups = {"paper_unseen": ids,
               "paper_original_holdout": ids & paper_holdout_ids,
               "never_selected_holes_50_80": {i for i in ids if i % 81 >= 50}}
+    if args.include_paper_train:
+        groups["all_balanced_test"] = ids
+        groups["paper_train_overlap"] = ids & paper_train_ids
+        groups["paper_unseen"] = ids - paper_train_ids
 
     paper_model = load_module("paper_seg_model_noise", args.paper_root / "models/seg_model2.py")
     paper_data = load_module("paper_loader_noise", args.paper_root / "data_utils/CircleDataLoader.py")
@@ -137,10 +155,21 @@ def main():
         model.load_state_dict(state["model"])
         model.eval()
         models[str(path.resolve())] = model
+    fit_models = {}
+    for path in args.fit_checkpoints:
+        state = torch.load(path, map_location="cpu", weights_only=False)
+        if state["config"]["groups"] != BALANCED_GROUPS or state["config"]["model_type"] != "fit":
+            raise ValueError(f"checkpoint is not balanced fit: {path}")
+        model = CircleNetV2().to(device)
+        model.load_state_dict(state["model"])
+        model.eval()
+        fit_models[str(path.resolve())] = model
 
     diagonal = (original.query.amax(dim=1) - original.query.amin(dim=1)).norm(dim=-1)
     output = {"paper_checkpoint": str(args.paper_root / "log/part_seg/seg_model2/checkpoints/best_model.pth"),
-              "attention_checkpoints": list(models), "paper_checkpoint_epoch_zero_based": checkpoint["epoch"],
+              "attention_checkpoints": list(models), "fit_checkpoints": list(fit_models),
+              "paper_checkpoint_epoch_zero_based": checkpoint["epoch"],
+              "include_paper_train": args.include_paper_train,
               "noise_percent": args.noise_percent, "seeds": args.seeds,
               "noise_definition": "independent Gaussian XYZ noise on l0 and l1; sigma = percent/100 times clean l0 bounding-box diagonal",
               "point_identity_and_labels": "unchanged after perturbation",
@@ -151,7 +180,7 @@ def main():
 
     def run(percent, seed, query, context):
         subset = select_dataset(original, indices, query, context)
-        scored = score_condition(subset, references, paper, models,
+        scored = score_condition(subset, references, paper, models, fit_models,
                                  (paper_model, paper_data, paper_train), device, groups)
         output["conditions"].append({"noise_percent": percent, "seed": seed,
                                      "groups": scored})
