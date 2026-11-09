@@ -286,8 +286,7 @@ def main(args):
             #break
         log_string('Training mean loss1: %f mean loss2: %f' % (loss1_sum / num_batches,loss2_sum / num_batches))
         log_string('Training mean rads: %f mean rads_gt: %f' % (
-            torch.cat([x.detach() for x in rads_all]).mean().item(),
-            torch.cat([x.detach() for x in rads_gt_all]).mean().item()))
+            torch.cat(rads_all).mean().item(), torch.cat(rads_gt_all).mean().item()))
         log_string('Training mean loss: %f' % (loss_sum / num_batches))
         train_instance_acc = np.mean(mean_correct)
         log_string('Train accuracy is: %.5f' % train_instance_acc)

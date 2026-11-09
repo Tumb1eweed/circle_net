@@ -438,7 +438,3 @@ class get_loss(nn.Module):
         loss2 = torch.mean((rads-rads_gt)**2)
 
         return loss1,loss2,rads,rads_gt
-
-
-
-
