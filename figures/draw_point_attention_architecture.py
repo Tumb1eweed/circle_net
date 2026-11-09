@@ -1,165 +1,170 @@
-"""Draw the trained CircleNetPointAttention architecture as an editable SVG.
+"""Render the implemented CircleNet in a layout inspired by paper Fig. 5.
 
-Run with the circlenet-repro environment. CairoSVG is used only to produce the
-PNG/PDF companions; the SVG is generated with the Python standard library.
+Red outlines mark modules added relative to the archived paper source. The
+feature extractor follows this repository's two-branch implementation, rather
+than the paper figure's illustrative four-branch extractor.
 """
 
+from math import hypot
 from pathlib import Path
 from xml.sax.saxutils import escape
 
 
 OUT = Path(__file__).resolve().parent
 SVG = OUT / "point_attention_architecture.svg"
-W, H = 519, 706  # 183 mm wide at one SVG unit per typographic point
-INK = "#1c2d3b"
-LINE = "#65798b"
-ACCENT = "#2c6096"
-NEUTRAL = "#f4f6f8"
-PALE = "#eaf2fa"
-FONT = "DejaVu Sans, WenQuanYi Zen Hei, sans-serif"
+W, H = 1400, 840
+INK = "#24313b"
+BLUE = "#3979ad"
+RED = "#ca3643"
+LINE = "#687987"
 parts = []
 
 
-def add(value):
-    parts.append(value)
+def add(s):
+    parts.append(s)
 
 
-def text(x, y, value, size=6.7, anchor="middle", weight="normal", fill=INK):
-    return (f'<text x="{x}" y="{y}" text-anchor="{anchor}" '
-            f'font-family="{FONT}" font-size="{size}" font-weight="{weight}" '
-            f'fill="{fill}">{escape(value)}</text>')
+def text(x, y, s, size=15, color=INK, anchor="middle", weight="normal"):
+    add(f'<text x="{x}" y="{y}" text-anchor="{anchor}" '
+        'font-family="DejaVu Sans, Noto Sans, sans-serif" '
+        f'font-size="{size}" font-weight="{weight}" fill="{color}">'
+        f'{escape(s)}</text>')
 
 
-def box(ident, x, y, width, height, lines, *, accent=False, title=False):
-    fill = PALE if accent else NEUTRAL
-    stroke = ACCENT if accent else "#b7c3cc"
-    add(f'<g id="{ident}">')
-    add(f'<rect x="{x}" y="{y}" width="{width}" height="{height}" '
-        f'rx="5" fill="{fill}" stroke="{stroke}" stroke-width="1"/>')
-    spacing = 11.1
-    first = y + (height - spacing * (len(lines) - 1)) / 2 + 2.4
-    for index, value in enumerate(lines):
-        add(text(x + width / 2, first + index * spacing, value,
-                 size=7.0 if index == 0 and title else 6.65,
-                 weight="bold" if index == 0 and title else "normal"))
-    add("</g>")
+def rect(x, y, w, h, fill="white", stroke="#aab9c4", radius=11, sw=2, dash=""):
+    extra = f' stroke-dasharray="{dash}"' if dash else ""
+    add(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{radius}" '
+        f'fill="{fill}" stroke="{stroke}" stroke-width="{sw}"{extra}/>')
 
 
-def arrow(ident, d, *, accent=False, width=1.25, head=True):
-    stroke = ACCENT if accent else LINE
-    marker = ' marker-end="url(#arrow-accent)"' if accent and head else (
-        ' marker-end="url(#arrow)"' if head else "")
-    add(f'<path id="{ident}" d="{d}" fill="none" stroke="{stroke}" '
-        f'stroke-width="{width}" stroke-linejoin="round"{marker}/>')
+def box(x, y, w, h, lines, *, new=False, fill=None, size=14):
+    rect(x, y, w, h, fill or ("#fff1f2" if new else "white"),
+         RED if new else "#aab9c4", sw=3 if new else 2)
+    step = size + 7
+    y0 = y + h / 2 - (len(lines) - 1) * step / 2 + size * .35
+    for i, line in enumerate(lines):
+        text(x + w / 2, y0 + i * step, line, size,
+             weight="bold" if i == 0 else "normal")
+    if new:
+        rect(x + w - 48, y - 10, 42, 20, RED, RED, radius=4, sw=1)
+        text(x + w - 27, y + 4, "NEW", 11, "white", weight="bold")
 
 
-def dot(x, y):
-    add(f'<circle cx="{x}" cy="{y}" r="2.2" fill="{LINE}"/>')
+def path(points, *, red=False):
+    color = RED if red else BLUE
+    d = "M" + " L".join(f"{x} {y}" for x, y in points)
+    add(f'<path d="{d}" fill="none" stroke="{color}" stroke-width="3" '
+        'stroke-linejoin="round"/>')
+    x0, y0 = points[-2]
+    x1, y1 = points[-1]
+    length = hypot(x1 - x0, y1 - y0)
+    ux, uy = (x1 - x0) / length, (y1 - y0) / length
+    bx, by = x1 - 10 * ux, y1 - 10 * uy
+    add(f'<polygon points="{x1},{y1} {bx - 4 * uy},{by + 4 * ux} '
+        f'{bx + 4 * uy},{by - 4 * ux}" fill="{color}"/>')
+
+
+def panel(x, y, w, h, title):
+    rect(x, y, w, h, "#f8fafc", "#81909b", radius=20)
+    text(x + 20, y + 31, title, 18, anchor="start", weight="bold")
 
 
 def main():
-    add(f'<svg xmlns="http://www.w3.org/2000/svg" width="183mm" '
-        f'height="249mm" viewBox="0 0 {W} {H}">')
-    add("<defs>")
-    for ident, fill in (("arrow", LINE), ("arrow-accent", ACCENT)):
-        add(f'<marker id="{ident}" markerWidth="7" markerHeight="7" '
-            'refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth">'
-            f'<path d="M0,0 L7,3.5 L0,7 Z" fill="{fill}"/></marker>')
-    add("</defs>")
+    add(f'<svg xmlns="http://www.w3.org/2000/svg" width="350mm" '
+        f'height="210mm" viewBox="0 0 {W} {H}">')
     add(f'<rect width="{W}" height="{H}" fill="white"/>')
-    add(text(259.5, 20, "CircleNet + PTv3-inspired point attention", 10.1,
-             weight="bold"))
-    add(text(259.5, 35, "CircleNetPointAttention code path  ·  B = batch size  ·  at most one circle per l0 patch", 6.8))
+    text(W / 2, 35, "CircleNet with point-to-point attention", 25, weight="bold")
+    text(W / 2, 62, "Figure 5-inspired layout · implemented mainline model · red frames = added modules", 15, LINE)
 
-    # Connectors are drawn first so that nodes cover their endpoints.
-    arrow("e-input-query-knn", "M128 99 V111 H210 V121")
-    arrow("e-input-context-knn", "M392 99 V111 H310 V121")
-    arrow("e-knn-local", "M210 175 V185 H133 V198")
-    arrow("e-knn-context", "M310 175 V185 H386 V198")
-    arrow("e-local-fusion", "M133 256 V267 H181 V279")
-    arrow("e-context-fusion", "M386 256 V267 H338 V279")
-    arrow("e-fusion-attention", "M260 338 V349 H69 V388", accent=True, width=1.55)
-    arrow("e-query-position", "M25 75 H9 V421 H25", width=1.05)
-    arrow("e-query-fit", "M9 421 V649 H100", width=1.05)
-    dot(9, 421)
-    for ident, x1, x2 in (("e-pos-morton", 113, 122),
-                           ("e-morton-local", 210, 219),
-                           ("e-local-shift", 307, 316),
-                           ("e-shift-global", 404, 413)):
-        arrow(ident, f"M{x1} 423 H{x2}", accent=True, width=1.55)
-    arrow("e-global-head-trunk", "M457 458 V483 H98", width=1.35, head=False)
-    for x in (98, 260, 421):
-        dot(x, 483)
-        arrow(f"e-feature-head-{x}", f"M{x} 483 V500")
-    arrow("e-class-weight", "M98 553 V563 H170 V573")
-    arrow("e-head-weight", "M260 553 V573")
-    arrow("e-weights-fit", "M260 612 V629")
-    arrow("e-normal-fit", "M421 553 H511 V649 H419")
+    # (a) Full network, arranged like the overview in the paper figure.
+    rect(28, 82, 1344, 185, "#eaf3fa", INK, radius=24, sw=3, dash="10 7")
+    text(52, 115, "(a) Full network", 19, anchor="start", weight="bold")
+    top = [
+        (56, 145, ("Input", "Q: 500 points", "C: 2000 points"), False),
+        (237, 145, ("KNN", "K = 16 / 128"), False),
+        (418, 155, ("Feature", "extraction"), False),
+        (609, 150, ("Two-token", "fusion"), False),
+        (795, 172, ("Point-to-point", "attention"), True),
+        (1003, 145, ("Boundary", "+ weight heads"), False),
+        (1184, 155, ("Plane + soft", "circle fit"), True),
+    ]
+    for x, width, lines, new in top:
+        box(x, 142, width, 77, lines, new=new)
+    for left, right in ((201, 237), (382, 418), (573, 609),
+                        (759, 795), (967, 1003), (1148, 1184)):
+        path(((left + 4, 180), (right - 7, 180)))
+    text(1262, 244, "center + radius", 13, RED)
 
-    box("n-query", 25, 52, 205, 47,
-        ("Query patch · data_l0", "Q  [B, 500, 3]  XYZ"), title=True)
-    box("n-context", 289, 52, 205, 47,
-        ("Context patch · data_l1", "C  [B, 2000, 3]  XYZ"), title=True)
-    box("n-knn", 125, 121, 269, 54,
-        ("Normalize + KNN in C", "128 nearest neighbors for each Q point",
-         "relative XYZ  [B, 500, 128, 3]"), title=True)
-    box("n-local-encoder", 25, 198, 215, 58,
-        ("Local neighborhood encoder · K=16", "Conv1d  3 → 64 → 128 → 128; max over K",
-         "f_local  [B, 500, 128]"), title=True)
-    box("n-context-encoder", 279, 198, 215, 58,
-        ("Context neighborhood encoder · K=128", "Conv1d  3 → 64 → 128 → 128; max over K",
-         "f_context  [B, 500, 128]"), title=True)
-    box("n-two-token-fusion", 96, 279, 327, 59,
-        ("Original two-token fusion, independently per Q point",
-         "stack  [B×500, 2, 128]  →  Transformer 1 layer, 4 heads",
-         "mean over 2 tokens  →  F  [B, 500, 128]"), title=True)
+    # (b) Feature extraction actually implemented: two XYZ neighborhood paths.
+    panel(28, 290, 408, 449, "(b) Feature extraction")
+    box(56, 342, 352, 53, ("Q [500,3] + C [2000,3]",), fill="#eaf3fa")
+    box(54, 435, 155, 68, ("Local patch", "K = 16"))
+    box(255, 435, 155, 68, ("Wide patch", "K = 128"))
+    path(((156, 395), (156, 415), (132, 415), (132, 435)))
+    path(((308, 395), (308, 415), (332, 415), (332, 435)))
+    box(54, 540, 155, 83, ("Conv1d ×3", "max pool", "128 channels"))
+    box(255, 540, 155, 83, ("Conv1d ×3", "max pool", "128 channels"))
+    path(((132, 503), (132, 540)))
+    path(((332, 503), (332, 540)))
+    box(122, 662, 220, 52, ("Two feature tokens / point",), fill="#eaf3fa")
+    path(((132, 623), (132, 646), (210, 646), (210, 662)))
+    path(((332, 623), (332, 646), (254, 646), (254, 662)))
+    text(232, 731, "Shared across all 500 query points", 12, LINE)
 
-    add('<g id="c-point-attention">')
-    add('<rect x="16" y="355" width="487" height="121" rx="7" fill="none" '
-        f'stroke="{ACCENT}" stroke-width="1.35"/>')
-    add(text(259.5, 371, "PTv3-inspired module  ·  attention between l0 points", 7.2,
-             weight="bold", fill=ACCENT))
-    add("</g>")
-    box("n-position", 25, 388, 88, 70,
-        ("Pos MLP + add", "Q: 3 → 64 → 128", "F+P [B,500,128]"), accent=True)
-    box("n-morton", 122, 388, 88, 70,
-        ("Morton sort", "Z-order; N=500", "[B,500,128]"), accent=True)
-    box("n-local-attn", 219, 388, 88, 70,
-        ("Window MHA", "32 pts; 4 heads", "[B×16,32,128]*"), accent=True)
-    box("n-shifted-attn", 316, 388, 88, 70,
-        ("Shifted MHA", "shift=16 pts", "32 pts; 4 heads",
-         "[B×16,32,128]*"), accent=True)
-    box("n-global-attn", 413, 388, 88, 70,
-        ("Global MHA + LN", "500 pts; 4 heads", "[B,500,128]"), accent=True)
+    # (c) Existing within-point fusion, followed by new cross-point attention.
+    panel(453, 290, 492, 449, "(c) Feature fusion and point attention")
+    box(480, 342, 438, 62, ("Two-token Transformer · 1 layer, 4 heads",
+                             "mean → F [500,128]"))
+    path(((699, 404), (699, 444)))
+    rect(474, 444, 450, 272, "none", RED, radius=16, sw=3)
+    text(699, 472, "Cross-point module", 16, RED, weight="bold")
+    box(495, 490, 185, 64, ("Position MLP", "XYZ → 128; add to F"), new=True, size=13)
+    box(713, 490, 185, 64, ("Morton order", "sort 500 points"), new=True, size=13)
+    path(((680, 522), (713, 522)), red=True)
+    box(495, 580, 185, 64, ("Window attention", "32 points, 4 heads"), new=True, size=13)
+    box(713, 580, 185, 64, ("Shifted windows", "shift = 16 points"), new=True, size=13)
+    path(((805, 554), (805, 570), (587, 570), (587, 580)), red=True)
+    path(((680, 612), (713, 612)), red=True)
+    box(603, 667, 192, 39, ("Global attention · 500 points",), new=True, size=12)
+    path(((805, 644), (805, 655), (699, 655), (699, 667)), red=True)
 
-    box("n-classifier", 25, 500, 147, 53,
-        ("Boundary classifier", "MLP 128 → 64 → 2", "logits [B,500,2]"), title=True)
-    box("n-weight-head", 187, 500, 147, 53,
-        ("Point-weight head", "MLP 128 → 64 → 1", "w logits [B,500]"), title=True)
-    box("n-normal-head", 349, 500, 145, 53,
-        ("Plane-normal head", "mean pool; 128 → 64 → 3", "n [B,3]"), title=True)
-    box("n-soft-weights", 125, 573, 269, 39,
-        ("Soft fit weights  q = p²(0.05 + 0.95 σ(w))",
-         "p = softmax(logits)[...,1];  q [B,500]"), title=True)
-    box("n-circle-fit", 100, 629, 319, 49,
-        ("Differentiable weighted 3D circle fit on Q, q and n",
-         "center c [B,3]   ·   radius r [B]   ·   normal n [B,3]"), title=True)
-    add(text(259.5, 691, "* 500 points are padded to 512 for 16 windows; 12 padding tokens are masked.", 5.6))
-    add(text(259.5, 701, "Blue blocks: LN → MHA → residual → LN → MLP(128→256→128) → residual. Not full PTv3.", 5.6))
+    # (d) Prediction heads and analytical fit; learned plane and soft fit are new.
+    panel(962, 290, 410, 449, "(d) Heads and circle fitting")
+    box(990, 342, 354, 53, ("Enriched point features [500,128]",), fill="#eaf3fa")
+    box(985, 435, 112, 66, ("Boundary", "P [500,2]"), size=13)
+    box(1111, 435, 112, 66, ("Weight", "W [500,1]"), size=13)
+    box(1237, 435, 112, 66, ("Plane normal", "n [3]"), new=True, size=12)
+    for x in (1041, 1167, 1293):
+        path(((1167, 395), (1167, 418), (x, 418), (x, 435)))
+    box(1006, 545, 326, 55, ("Soft fit weights",
+                             "q = p² · (0.05 + 0.95 sigmoid(w))"), new=True, size=13)
+    path(((1041, 501), (1041, 526), (1100, 526), (1100, 545)), red=True)
+    path(((1167, 501), (1167, 526), (1220, 526), (1220, 545)), red=True)
+    box(1006, 634, 326, 54, ("Differentiable weighted circle fit",
+                             "Q + q + n → center c, radius r"), new=True, size=13)
+    path(((1169, 600), (1169, 634)), red=True)
+    path(((1293, 501), (1357, 501), (1357, 661), (1332, 661)), red=True)
+    text(1167, 715, "One circle per positive patch", 13, LINE)
+
+    rect(28, 761, 1344, 53, "#fafbfc", "#cbd4da", radius=8)
+    rect(49, 780, 28, 16, "#fff1f2", RED, radius=3, sw=3)
+    text(91, 793, "Added relative to the paper source implementation", 13, anchor="start")
+    text(1326, 793, "Paper source: hard selection → PCA plane → weighted 2D least squares",
+         12, LINE, anchor="end")
     add("</svg>")
-    OUT.mkdir(parents=True, exist_ok=True)
+
     SVG.write_text("\n".join(parts) + "\n", encoding="utf-8")
     print(SVG)
     try:
-        import cairosvg
+        import pymupdf
     except ImportError:
-        print("CairoSVG unavailable: SVG saved; PNG/PDF export skipped")
+        print("PyMuPDF unavailable: SVG saved; PNG/PDF export skipped")
     else:
-        cairosvg.svg2png(url=str(SVG), write_to=str(OUT / "point_attention_architecture.png"),
-                         output_width=2076, output_height=2824)
-        cairosvg.svg2pdf(url=str(SVG), write_to=str(OUT / "point_attention_architecture.pdf"))
-        print(OUT / "point_attention_architecture.png")
-        print(OUT / "point_attention_architecture.pdf")
+        document = pymupdf.open(SVG)
+        scale = 2800 / document[0].rect.width
+        document[0].get_pixmap(matrix=pymupdf.Matrix(scale, scale),
+                               alpha=False).save(OUT / "point_attention_architecture.png")
+        (OUT / "point_attention_architecture.pdf").write_bytes(document.convert_to_pdf())
 
 
 if __name__ == "__main__":
